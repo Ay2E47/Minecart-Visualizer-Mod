@@ -84,8 +84,20 @@ public class MinecartVisualizerClient implements ClientModInitializer {
 					UUID entityUuid = entry.getValue().uuid;
 					HopperMinecartState state = entry.getValue();
 
+					long gameTime = MinecartTrackerTools.getGameTime();
+					String changeInItem = "Item Changed: %s->%s";
+					String changeInCount = " %d->%d ";
+
+					long runTime;
+					Text runTimeText = Text.literal("" );
+					if (MinecartVisualizerConfig.trackerOutputRuntime){
+						runTime = gameTime - state.startTime;
+						runTimeText = Text.literal("[gt" + runTime + "]" ).setStyle(Style.EMPTY.withColor(TextColor.fromRgb(0xFFD02C)));
+					}
 
 					if (!MinecartTrackerTools.isEntityLoaded(entityUuid)) {
+						Text unLoadedText = Text.literal("Tracker-"+ entry.getKey() +" be unloaded");
+						state.player.sendMessage(runTimeText.copy().append(unLoadedText).formatted(Formatting.RED),false);
 						iterator.remove();
 						continue;
 					}
@@ -104,16 +116,7 @@ public class MinecartVisualizerClient implements ClientModInitializer {
 								int slotNumber = slot.getKey();
 								int fixedSlotNumber = slotNumber+1;
 
-								long gameTime = MinecartTrackerTools.getGameTime();
-								String changeInItem = "Item Changed: %s->%s";
-								String changeInCount = " %d->%d ";
 
-								long runTime;
-								Text worldTimeText = Text.literal("" );
-								if (MinecartVisualizerConfig.trackerOutputRuntime){
-									runTime = gameTime - state.startTime;
-									worldTimeText = Text.literal("[gt" + runTime + "]" ).setStyle(Style.EMPTY.withColor(TextColor.fromRgb(0xFFD02C)));
-								}
 
 								Text slotText = Text.literal("[" + "Slot" + fixedSlotNumber + "]").formatted(Formatting.GOLD);
 								Text itemText;
@@ -147,7 +150,7 @@ public class MinecartVisualizerClient implements ClientModInitializer {
 
 								Text numberText = Text.literal("[Tracker-" + number + "]").setStyle(Style.EMPTY.withColor(TextColor.fromRgb(0x3490dE)));
 								Text dividingLine = Text.literal(" |").formatted(Formatting.GRAY);
-								Text finalText = worldTimeText.copy()
+								Text finalText = runTimeText.copy()
 										.append(numberText)
 										.append(slotText)
 										.append(itemText)

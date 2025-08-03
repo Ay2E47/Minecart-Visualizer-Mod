@@ -78,6 +78,10 @@ public class MinecartVisualizerCommands {
                                                             ClientPlayerEntity player = context.getSource().getPlayer();
                                                             int number = IntegerArgumentType.getInteger(context, "number");
                                                             MinecartTrackerTools.removeHopperMinecartTracker(number, player);
+                                                            if (player != null && !(hopperMinecartTrackers.containsKey(number))){
+                                                                player.sendMessage(Text.literal("The number has be removed"),true);
+                                                                return 0;
+                                                            }
                                                             if (player != null) {player.sendMessage(Text.literal("Remove successful"),true);}
                                                             return 1;
                                                         })))
