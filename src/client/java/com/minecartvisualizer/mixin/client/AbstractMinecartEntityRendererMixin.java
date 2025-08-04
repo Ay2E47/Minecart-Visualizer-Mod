@@ -12,6 +12,7 @@ import net.minecraft.entity.vehicle.AbstractMinecartEntity;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
+import net.minecraft.text.TextColor;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -70,11 +71,6 @@ public abstract class AbstractMinecartEntityRendererMixin extends EntityRenderer
 
             List<MutableText> infoTexts = new ArrayList<>();
 
-            if (MinecartVisualizerConfig.enableInfoTextDisplay){
-                infoTexts = InfoRenderer.getInfoTexts(displayInfo);
-            }
-
-
             if (MinecartVisualizerConfig.enableTrackerNumberDisplay && !hopperMinecartTrackers.isEmpty()){
                 int number = 0;
                 for (Map.Entry<Integer, HopperMinecartState> entry : hopperMinecartTrackers.entrySet()) {
@@ -82,8 +78,14 @@ public abstract class AbstractMinecartEntityRendererMixin extends EntityRenderer
                         number = entry.getKey();
                     }
                 }
-                infoTexts.add(Text.literal("Tracker-" + number).setStyle(Style.EMPTY));
+            infoTexts.add(Text.literal("Tracker - " + number).setStyle(Style.EMPTY.withColor(TextColor.fromRgb(0x2E7CBE))));
             }
+
+            if (MinecartVisualizerConfig.enableInfoTextDisplay){
+                infoTexts.addAll(InfoRenderer.getInfoTexts(displayInfo));
+            }
+
+
             InfoRenderer.renderTexts(infoTexts, entity, matrices, vertexConsumer);
     }
 }

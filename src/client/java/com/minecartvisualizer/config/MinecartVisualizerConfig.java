@@ -10,6 +10,7 @@ public final class MinecartVisualizerConfig {
     public static boolean enableHopperMinecartEnableDisplay = true;
     public static boolean enableHopperMinecartInventoryDisplay =true;
     public static boolean enableItemStackCountDisplay = true;
+    public static boolean trackAllMinecart = false;
     public static boolean mergeStackingMinecartInfo = false;
     public static boolean alwaysFacingThePlayer = true;
     public static boolean trackerOutputRuntime = false;

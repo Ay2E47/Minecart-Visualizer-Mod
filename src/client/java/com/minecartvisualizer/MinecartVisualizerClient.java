@@ -8,6 +8,8 @@ import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.vehicle.HopperMinecartEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
@@ -61,7 +63,7 @@ public class MinecartVisualizerClient implements ClientModInitializer {
 
 			while (setTrackerBinding.wasPressed()){
 				ClientPlayerEntity player = client.player;
-				MinecartVisualizerCommands.setNewTracker(MinecartVisualizerCommands.counter++,player);
+				MinecartVisualizerCommands.setNewTracker(MinecartVisualizerCommands.counter++ ,player);
 			}
 
 			if(!MinecartVisualizerConfig.enableMinecartVisualization && displayInfoKeyBinding.isPressed()){
@@ -106,7 +108,7 @@ public class MinecartVisualizerClient implements ClientModInitializer {
 
 						if (MinecartVisualizerConfig.trackMinecartUnload){
 							Text unLoadedText = Text.literal("Tracker-"+ entry.getKey() +" be unloaded");
-							state.player.sendMessage(runTimeText.copy().append(unLoadedText).append(posText).formatted(Formatting.RED),false);
+							state.player.sendMessage(runTimeText.copy().append(unLoadedText).append(posText).setStyle(Style.EMPTY.withColor(TextColor.fromRgb(0xFF322B))),false);
 						}
 						iterator.remove();
 						continue;
@@ -216,6 +218,16 @@ public class MinecartVisualizerClient implements ClientModInitializer {
 						iterator.remove();
 				}
 			}
+			}
+		});
+
+		ClientTickEvents.END_CLIENT_TICK.register(client -> {
+			if (MinecartVisualizerConfig.trackAllMinecart && client.world != null){
+				for (Entity entity : client.world.getEntities()){
+					if (entity instanceof HopperMinecartEntity && !MinecartTrackerTools.toUUIDList(hopperMinecartTrackers).contains(entity.getUuid())){
+						MinecartVisualizerCommands.setNewTracker(MinecartTrackerTools.getNextAvailableNumber(), MinecartVisualizerCommands.playerEntity, entity.getUuid());
+					}
+				}
 			}
 		});
 	}

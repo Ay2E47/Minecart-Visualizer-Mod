@@ -28,6 +28,7 @@ import static com.minecartvisualizer.MinecartVisualizerClient.travelTimers;
 
 public class MinecartVisualizerCommands {
     public static int counter = 1;
+    public static ClientPlayerEntity playerEntity = null;
     public static void registerCommands() {
         ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> dispatcher.register(
                 ClientCommandManager.literal("MinecartVisualizer")
@@ -64,12 +65,11 @@ public class MinecartVisualizerCommands {
                                                         .executes(context -> {
                                                             ClientPlayerEntity player = context.getSource().getPlayer();
                                                             int number = IntegerArgumentType.getInteger(context, "number");
-                                                            return setNewTracker(number,player);
+                                                            return setNewTracker(number, player);
                                                         }))
                                                 .executes(context -> {
                                                     ClientPlayerEntity player = context.getSource().getPlayer();
-                                                    while (hopperMinecartTrackers.containsKey(counter)){counter++;}
-                                                    return setNewTracker(counter++,player);
+                                                    return setNewTracker(MinecartTrackerTools.getNextAvailableNumber(), player);
                                                 })
                                         )
                                         .then(ClientCommandManager.literal("Remove")
@@ -85,13 +85,22 @@ public class MinecartVisualizerCommands {
                                                             if (player != null) {player.sendMessage(Text.literal("Remove successful"),true);}
                                                             return 1;
                                                         })))
-                                        .then(ClientCommandManager.literal("RemoveAllTracker")
+                                        .then(ClientCommandManager.literal("RemoveAll")
                                                 .executes(context ->{
                                                     hopperMinecartTrackers.clear();
                                                     ClientPlayerEntity player = context.getSource().getPlayer();
                                                     if (player != null) {player.sendMessage(Text.literal("Remove successful"),true);}
                                                     return 1;
-                                                })))
+                                                }))
+                                        .then(ClientCommandManager.literal("TrackAll")
+                                                .then(ClientCommandManager.argument("value", BoolArgumentType.bool())
+                                                        .executes(context -> {
+                                                            if (BoolArgumentType.getBool(context, "value")){
+                                                                playerEntity = context.getSource().getPlayer();
+                                                            }else {playerEntity = null;}
+                                                            setBooleanSetting(context.getSource(), "trackAll", BoolArgumentType.getBool(context, "value"));
+                                                            return 1;
+                                                        }))))
                                 .executes(context -> {
                                     List<Text> outputMessages = new ArrayList<>();
                                     TextColor travelTimerColor = TextColor.fromRgb(0x40E0D0);
@@ -153,7 +162,10 @@ public class MinecartVisualizerCommands {
                                     }
                                     return 1;
                                 }))
-                        .then(ClientCommandManager.literal("function")
+                        .then(ClientCommandManager.literal("setting")
+                                .then(ClientCommandManager.literal("TrackNumberDisplay")
+                                        .then(ClientCommandManager.argument("value", BoolArgumentType.bool())
+                                                .executes(context -> setBooleanSetting(context.getSource(), "enableTrackNumberDisplay", BoolArgumentType.getBool(context, "value")))))
                                 .then(ClientCommandManager.literal("InfoTextDisplay")
                                         .then(ClientCommandManager.argument("value", BoolArgumentType.bool())
                                                 .executes(context -> setBooleanSetting(context.getSource(), "enableInfoTextDisplay", BoolArgumentType.getBool(context, "value")))))
@@ -172,10 +184,10 @@ public class MinecartVisualizerCommands {
                                 .then(ClientCommandManager.literal("LockedDisplay")
                                         .then(ClientCommandManager.argument("value", BoolArgumentType.bool())
                                                 .executes(context -> setBooleanSetting(context.getSource(), "enableHopperMinecartEnableDisplay", BoolArgumentType.getBool(context, "value")))))
-                                .then(ClientCommandManager.literal("itemStackCountDisplay")
+                                .then(ClientCommandManager.literal("ItemStackCountDisplay")
                                         .then(ClientCommandManager.argument("value", BoolArgumentType.bool())
                                                 .executes(context -> setBooleanSetting(context.getSource(), "enableItemStackCountDisplay", BoolArgumentType.getBool(context, "value")))))
-                        )
+)
                         .then(ClientCommandManager.literal("option")
                                 .then(ClientCommandManager.literal("AlwaysFacingThePlayer")
                                         .then(ClientCommandManager.argument("value", BoolArgumentType.bool())
@@ -213,9 +225,8 @@ public class MinecartVisualizerCommands {
                                         .then(ClientCommandManager.argument("value", IntegerArgumentType.integer(1, 16))
                                                 .executes(context -> setIntegerSetting(context.getSource(), "accuracy", IntegerArgumentType.getInteger(context, "value")))))
                         )
-                        .executes(context -> toggleBooleanSetting(context.getSource(), "enableMinecartVisualization"))
-        ));
 
+                        .executes(context -> toggleBooleanSetting(context.getSource(), "enableMinecartVisualization"))));
     }
 
     private static int toggleBooleanSetting(FabricClientCommandSource source, String settingName){
@@ -230,6 +241,9 @@ public class MinecartVisualizerCommands {
         switch (settingName) {
             case "enableMinecartVisualization":
                 MinecartVisualizerConfig.enableMinecartVisualization = value;
+                break;
+            case "enableTrackerNumberDisplay":
+                MinecartVisualizerConfig.enableTrackerNumberDisplay = value;
                 break;
             case "enableInfoTextDisplay":
                 MinecartVisualizerConfig.enableInfoTextDisplay = value;
@@ -278,6 +292,9 @@ public class MinecartVisualizerCommands {
                 break;
             case "trackMinecartUnload":
                 MinecartVisualizerConfig.trackMinecartUnload = value;
+                break;
+            case "trackAll":
+                MinecartVisualizerConfig.trackAllMinecart = value;
                 break;
             default:
                 success = false;
@@ -332,5 +349,11 @@ public class MinecartVisualizerCommands {
 
         if (player != null) {player.sendMessage(Text.literal("Set Tracker-" + number + " successful"),true);}
         return 1;
+    }
+
+    public static void setNewTracker(int number, ClientPlayerEntity player, UUID uuid){
+
+        MinecartTrackerTools.setNewHopperMinecartTracker(uuid, player, number);
+
     }
 }

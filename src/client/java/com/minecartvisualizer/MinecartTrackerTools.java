@@ -13,6 +13,7 @@ import net.minecraft.util.math.Vec3d;
 import java.util.*;
 
 import static com.minecartvisualizer.MinecartVisualizerClient.*;
+import static com.minecartvisualizer.command.MinecartVisualizerCommands.counter;
 
 public class MinecartTrackerTools {
 
@@ -84,6 +85,16 @@ public class MinecartTrackerTools {
             uuidList.add(state.uuid);
         }
         return uuidList;
+    }
+
+    public static int getNextAvailableNumber() {
+
+        for (int i = 1; i < counter; i++) {
+            if (!hopperMinecartTrackers.containsKey(i)) {
+                return i;
+            }
+        }
+        return counter++;
     }
 
 }
