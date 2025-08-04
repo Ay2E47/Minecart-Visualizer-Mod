@@ -1,7 +1,6 @@
 package com.minecartvisualizer;
 
 import com.minecartvisualizer.config.MinecartVisualizerConfig;
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.render.*;
@@ -19,22 +18,14 @@ import net.minecraft.util.math.Vec3d;
 import org.joml.Matrix4f;
 import net.minecraft.entity.Entity;
 
-import java.util.ArrayList;
 import java.util.List;
 
 
 public class InfoRenderer {
     public static boolean getCustomRenderLayer;
 
-    public static void renderTexts(MinecartDataPayload displayInfo, Entity entity, MatrixStack matrices, VertexConsumerProvider vertexConsumer) {
+    public static void renderTexts(List<MutableText> infoTexts, Entity entity, MatrixStack matrices, VertexConsumerProvider vertexConsumer) {
 
-        boolean[] enableFunctions = {
-                MinecartVisualizerConfig.enablePosTextDisplay,
-                MinecartVisualizerConfig.enableVelocityTextDisplay,
-                MinecartVisualizerConfig.enableYawTextDisplay
-        };
-
-        ArrayList<MutableText> infoTexts = displayInfo.getInfoTexts(MinecartVisualizerConfig.accuracy, enableFunctions);
         TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
         float height = entity.getHeight() + 1;
         float y = 10 - (infoTexts.size() * 10);
@@ -219,6 +210,16 @@ public class InfoRenderer {
 
         return !MinecartVisualizerConfig.mergeStackingMinecartInfo ||
                 MinecartClientHandler.leaderMinecarts.contains(entity.getUuid());
+    }
+
+    public static List<MutableText> getInfoTexts(MinecartDataPayload displayInfo){
+        boolean[] enableFunctions = {
+                MinecartVisualizerConfig.enablePosTextDisplay,
+                MinecartVisualizerConfig.enableVelocityTextDisplay,
+                MinecartVisualizerConfig.enableYawTextDisplay
+        };
+
+        return displayInfo.getInfoTexts(MinecartVisualizerConfig.accuracy, enableFunctions);
     }
 }
 

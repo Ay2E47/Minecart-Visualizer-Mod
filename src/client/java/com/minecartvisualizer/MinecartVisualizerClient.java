@@ -84,8 +84,9 @@ public class MinecartVisualizerClient implements ClientModInitializer {
 					UUID entityUuid = entry.getValue().uuid;
 					HopperMinecartState state = entry.getValue();
 
+					Text numberText = Text.literal("[Tracker-" + number + "]").setStyle(Style.EMPTY.withColor(TextColor.fromRgb(0x3490dE)));
+
 					long gameTime = MinecartTrackerTools.getGameTime();
-					String changeInItem = "Item Changed: %s->%s";
 					String changeInCount = " %d->%d ";
 
 					long runTime;
@@ -95,9 +96,18 @@ public class MinecartVisualizerClient implements ClientModInitializer {
 						runTimeText = Text.literal("[gt" + runTime + "]" ).setStyle(Style.EMPTY.withColor(TextColor.fromRgb(0xFFD02C)));
 					}
 
+					Text posText;
+					if (state.pos != null && MinecartVisualizerConfig.trackerOutputPosition) {
+						Vec3d formatedPos = FormatTools.truncate(state.pos,1);
+						posText = Text.literal(formatedPos.toString()).setStyle(Style.EMPTY.withColor(TextColor.fromRgb(0x7EADFF)));
+					} else {posText = Text.literal("");}
+
 					if (!MinecartTrackerTools.isEntityLoaded(entityUuid)) {
-						Text unLoadedText = Text.literal("Tracker-"+ entry.getKey() +" be unloaded");
-						state.player.sendMessage(runTimeText.copy().append(unLoadedText).formatted(Formatting.RED),false);
+
+						if (MinecartVisualizerConfig.trackMinecartUnload){
+							Text unLoadedText = Text.literal("Tracker-"+ entry.getKey() +" be unloaded");
+							state.player.sendMessage(runTimeText.copy().append(unLoadedText).append(posText).formatted(Formatting.RED),false);
+						}
 						iterator.remove();
 						continue;
 					}
@@ -119,15 +129,31 @@ public class MinecartVisualizerClient implements ClientModInitializer {
 
 
 								Text slotText = Text.literal("[" + "Slot" + fixedSlotNumber + "]").formatted(Formatting.GOLD);
-								Text itemText;
+								Text itemText = Text.literal("");
 								Text countText = Text.literal("");
 
 								if (state.inventory.get(slotNumber).getItem() != state.lastInventory.get(slotNumber).getItem()){
-									String id1 = state.lastInventory.get(slotNumber).getItem().toString();
-									String id2 = state.inventory.get(slotNumber).getItem().toString();
-									String itemString = String.format(changeInItem,id1.replace("minecraft:",""),id2.replace("minecraft:",""));
-									itemText = Text.literal(" " + itemString).setStyle(Style.EMPTY.withColor(TextColor.fromRgb(0xE60013)));
+									Text item1 = state.lastInventory.get(slotNumber).getItem().getName().copy()
+											.setStyle(Style.EMPTY.withColor(TextColor.fromRgb(0x64BE00)));
+									Text item2 = state.inventory.get(slotNumber).getItem().getName().copy()
+											.setStyle(Style.EMPTY.withColor(TextColor.fromRgb(0xE85FAB)));
+									Text arrow = Text.literal(" -> ");
 
+
+									if (MinecartVisualizerConfig.trackSlotChanges){
+										Text slotChangedText = Text.literal("Slot Changed:")
+												.setStyle(Style.EMPTY.withColor(TextColor.fromRgb(0xBF1534)));
+										Text finalText;
+										finalText = runTimeText.copy()
+												.append(numberText)
+												.append(posText)
+												.append(slotChangedText)
+												.append(item1)
+												.append(arrow)
+												.append(item2);
+										state.player.sendMessage(finalText, false);
+										continue;
+									}
 								}else {
 									String itemString = " " + state.inventory.get(slotNumber).getItem().toString().replace("minecraft:","");
 									itemText = Text.literal(itemString).setStyle(Style.EMPTY.withColor(TextColor.fromRgb(0xBD41F2)));
@@ -135,21 +161,20 @@ public class MinecartVisualizerClient implements ClientModInitializer {
 								if (state.inventory.get(slotNumber).getCount() != state.lastInventory.get(slotNumber).getCount()){
 									String countString = String.format(changeInCount,state.lastInventory.get(slotNumber).getCount(), state.inventory.get(slotNumber).getCount());
 									if (state.inventory.get(slotNumber).getCount() > state.lastInventory.get(slotNumber).getCount()){
+										if (!MinecartVisualizerConfig.trackItemAdditions){continue;}
 										countText = Text.literal(countString).setStyle(Style.EMPTY.withColor(TextColor.fromRgb(0x7CFC00)));
 									}else {
+										if (!MinecartVisualizerConfig.trackItemDecreases){continue;}
 										countText = Text.literal(countString).setStyle(Style.EMPTY.withColor(TextColor.fromRgb(0xFF1493)));
 									}
 								}
 
 
-								Text posText;
-								if (pos != null && MinecartVisualizerConfig.trackerOutputPosition) {
-									Vec3d formatedPos = FormatTools.truncate(pos,1);
-									posText = Text.literal(formatedPos.toString()).setStyle(Style.EMPTY.withColor(TextColor.fromRgb(0x7EADFF)));
-								} else {posText = Text.literal("");}
+								Text dividingLine = Text.literal("");
+								if (MinecartVisualizerConfig.trackItemAdditions || MinecartVisualizerConfig.trackItemDecreases){
+									dividingLine = Text.literal(" | ").formatted(Formatting.GRAY);
+								}
 
-								Text numberText = Text.literal("[Tracker-" + number + "]").setStyle(Style.EMPTY.withColor(TextColor.fromRgb(0x3490dE)));
-								Text dividingLine = Text.literal(" |").formatted(Formatting.GRAY);
 								Text finalText = runTimeText.copy()
 										.append(numberText)
 										.append(slotText)
@@ -181,19 +206,19 @@ public class MinecartVisualizerClient implements ClientModInitializer {
 					}
 					Vec3d entityPos = MinecartTrackerTools.getMinecartPosition(uuid);
 
-					if (entityPos == null){return;}
+					if (entityPos == null){continue;}
 					BlockPos minecartBlockPos = new BlockPos((int) entityPos.x, (int) entityPos.y, (int) entityPos.z);
 
 					BlockPos destinationBlockPos = new BlockPos((int) state.destination.x, (int) state.destination.y, (int) state.destination.z);
 
 					if (minecartBlockPos.equals(destinationBlockPos)) {
-						state.player.sendMessage(Text.literal("Move to" + entityPos + "takes" + state.tickCount + "gt"),false);
+						state.player.sendMessage(Text.literal("Move to " + destinationBlockPos + " takes " + state.tickCount + " gt"),false);
 						iterator.remove();
-
 				}
 			}
 			}
-
 		});
 	}
+
+	
 }

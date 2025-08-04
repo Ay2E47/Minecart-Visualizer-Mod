@@ -154,9 +154,9 @@ public class MinecartVisualizerCommands {
                                     return 1;
                                 }))
                         .then(ClientCommandManager.literal("function")
-                                .then(ClientCommandManager.literal("TextDisplay")
+                                .then(ClientCommandManager.literal("InfoTextDisplay")
                                         .then(ClientCommandManager.argument("value", BoolArgumentType.bool())
-                                                .executes(context -> setBooleanSetting(context.getSource(), "enableTextDisplay", BoolArgumentType.getBool(context, "value")))))
+                                                .executes(context -> setBooleanSetting(context.getSource(), "enableInfoTextDisplay", BoolArgumentType.getBool(context, "value")))))
                                 .then(ClientCommandManager.literal("PosDisplay")
                                         .then(ClientCommandManager.argument("value", BoolArgumentType.bool())
                                                 .executes(context -> setBooleanSetting(context.getSource(), "enablePosTextDisplay", BoolArgumentType.getBool(context, "value")))))
@@ -190,8 +190,20 @@ public class MinecartVisualizerCommands {
                                         .then(ClientCommandManager.argument("value",BoolArgumentType.bool())
                                                 .executes(context -> setBooleanSetting(context.getSource(), "trackerOutputPosition",BoolArgumentType.getBool(context,"value")))))
                                 .then(ClientCommandManager.literal("GlowingTrackingMinecart")
-                                        .then(ClientCommandManager.argument("value", BoolArgumentType.bool()))
-                                )
+                                        .then(ClientCommandManager.argument("value", BoolArgumentType.bool())
+                                                .executes(context -> setBooleanSetting(context.getSource(), "glowingTrackingMinecart",BoolArgumentType.getBool(context,"value")))))
+                                .then(ClientCommandManager.literal("TrackSlotChanges")
+                                        .then(ClientCommandManager.argument("value",BoolArgumentType.bool())
+                                                .executes(context -> setBooleanSetting(context.getSource(), "trackSlotChanges",BoolArgumentType.getBool(context,"value")))))
+                                .then(ClientCommandManager.literal("TrackItemAdditions")
+                                        .then(ClientCommandManager.argument("value",BoolArgumentType.bool())
+                                                .executes(context -> setBooleanSetting(context.getSource(), "trackItemAdditions",BoolArgumentType.getBool(context,"value")))))
+                                .then(ClientCommandManager.literal("TrackItemDecreases")
+                                        .then(ClientCommandManager.argument("value",BoolArgumentType.bool())
+                                                .executes(context -> setBooleanSetting(context.getSource(), "trackItemDecreases",BoolArgumentType.getBool(context,"value")))))
+                                .then(ClientCommandManager.literal("TrackMinecartUnload")
+                                        .then(ClientCommandManager.argument("value",BoolArgumentType.bool())
+                                                .executes(context -> setBooleanSetting(context.getSource(), "trackMinecartUnload",BoolArgumentType.getBool(context,"value")))))
                         )
                         .then(ClientCommandManager.literal("argument")
                                 .then(ClientCommandManager.literal("InfoRenderDistance")
@@ -219,8 +231,8 @@ public class MinecartVisualizerCommands {
             case "enableMinecartVisualization":
                 MinecartVisualizerConfig.enableMinecartVisualization = value;
                 break;
-            case "enableTextDisplay":
-                MinecartVisualizerConfig.enableTextDisplay = value;
+            case "enableInfoTextDisplay":
+                MinecartVisualizerConfig.enableInfoTextDisplay = value;
                 break;
             case "enablePosTextDisplay":
                 MinecartVisualizerConfig.enablePosTextDisplay = value;
@@ -254,6 +266,19 @@ public class MinecartVisualizerCommands {
                 break;
             case "glowingTrackingMinecart":
                 MinecartVisualizerConfig.glowingTrackingMinecart = value;
+                break;
+            case "trackSlotChanges":
+                MinecartVisualizerConfig.trackSlotChanges = value;
+                break;
+            case "trackItemAdditions":
+                MinecartVisualizerConfig.trackItemAdditions = value;
+                break;
+            case "trackItemDecreases":
+                MinecartVisualizerConfig.trackItemDecreases = value;
+                break;
+            case "trackMinecartUnload":
+                MinecartVisualizerConfig.trackMinecartUnload = value;
+                break;
             default:
                 success = false;
 

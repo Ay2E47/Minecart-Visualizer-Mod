@@ -1,9 +1,6 @@
 package com.minecartvisualizer.mixin.client;
 
-import com.minecartvisualizer.InfoRenderer;
-import com.minecartvisualizer.MinecartClientHandler;
-import com.minecartvisualizer.MinecartDataPayload;
-import com.minecartvisualizer.MinecartVisualizerClient;
+import com.minecartvisualizer.*;
 import com.minecartvisualizer.config.MinecartVisualizerConfig;
 import net.minecraft.client.render.*;
 import net.minecraft.client.render.entity.AbstractMinecartEntityRenderer;
@@ -12,15 +9,20 @@ import net.minecraft.client.render.entity.EntityRendererFactory;
 import net.minecraft.client.render.entity.state.MinecartEntityRenderState;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.vehicle.AbstractMinecartEntity;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.Style;
+import net.minecraft.text.Text;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
-
-
+import static com.minecartvisualizer.MinecartVisualizerClient.hopperMinecartTrackers;
 
 
 @Mixin(AbstractMinecartEntityRenderer.class)
@@ -66,8 +68,22 @@ public abstract class AbstractMinecartEntityRendererMixin extends EntityRenderer
 
             if (displayInfo == null){return;}
 
-            if (MinecartVisualizerConfig.enableTextDisplay){
-                InfoRenderer.renderTexts(displayInfo, entity, matrices, vertexConsumer);
+            List<MutableText> infoTexts = new ArrayList<>();
+
+            if (MinecartVisualizerConfig.enableInfoTextDisplay){
+                infoTexts = InfoRenderer.getInfoTexts(displayInfo);
             }
+
+
+            if (MinecartVisualizerConfig.enableTrackerNumberDisplay && !hopperMinecartTrackers.isEmpty()){
+                int number = 0;
+                for (Map.Entry<Integer, HopperMinecartState> entry : hopperMinecartTrackers.entrySet()) {
+                    if (entry.getValue().uuid == entity.getUuid()){
+                        number = entry.getKey();
+                    }
+                }
+                infoTexts.add(Text.literal("Tracker-" + number).setStyle(Style.EMPTY));
+            }
+            InfoRenderer.renderTexts(infoTexts, entity, matrices, vertexConsumer);
     }
 }

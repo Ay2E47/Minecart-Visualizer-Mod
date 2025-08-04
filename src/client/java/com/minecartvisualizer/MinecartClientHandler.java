@@ -10,6 +10,8 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import static com.minecartvisualizer.MinecartVisualizerClient.travelTimers;
+
 public class MinecartClientHandler {
 
     private static final Map<UUID, MinecartDataPayload> MINECART_DATA = new ConcurrentHashMap<>();
@@ -76,11 +78,16 @@ public class MinecartClientHandler {
         ClientPlayNetworking.registerGlobalReceiver(MinecartDataPayload.ID, (payload, context) -> MinecraftClient.getInstance().execute(() -> {
             MINECART_DATA.put(payload.uuid(), payload);
             serverMinecarts.put(payload.uuid(),payload.pos());
+
             if (MinecartVisualizerConfig.mergeStackingMinecartInfo){
                 List<UUID> minecarts = new ArrayList<>();
                 updateMinecartGroups();
                 for (List<UUID> group : minecartGroups) {minecarts.add(group.getFirst());}
                 leaderMinecarts = minecarts;
+            }
+
+            if (travelTimers != null && travelTimers.containsKey(payload.uuid())){
+                travelTimers.get(payload.uuid()).tickCount++;
             }
         }));
 
