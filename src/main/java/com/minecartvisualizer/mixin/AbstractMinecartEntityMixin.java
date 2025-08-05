@@ -33,7 +33,7 @@ public abstract class AbstractMinecartEntityMixin extends Entity {
             Vec3d velocity = this.getVelocity();
             float yaw = this.getYaw();
             MinecartDataPayload payload = new MinecartDataPayload(uuid,pos,velocity,yaw);
-            serverWorld.getPlayers(player -> player.squaredDistanceTo(this) < 32 * 32)
+            serverWorld.getPlayers(player -> player.squaredDistanceTo(this) < 64 * 64)
                     .forEach(player -> ServerPlayNetworking.send(player, payload));
         }
     }

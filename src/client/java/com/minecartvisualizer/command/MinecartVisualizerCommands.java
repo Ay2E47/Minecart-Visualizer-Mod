@@ -163,9 +163,9 @@ public class MinecartVisualizerCommands {
                                     return 1;
                                 }))
                         .then(ClientCommandManager.literal("setting")
-                                .then(ClientCommandManager.literal("TrackNumberDisplay")
+                                .then(ClientCommandManager.literal("TrackerNumberDisplay")
                                         .then(ClientCommandManager.argument("value", BoolArgumentType.bool())
-                                                .executes(context -> setBooleanSetting(context.getSource(), "enableTrackNumberDisplay", BoolArgumentType.getBool(context, "value")))))
+                                                .executes(context -> setBooleanSetting(context.getSource(), "enableTrackerNumberDisplay", BoolArgumentType.getBool(context, "value")))))
                                 .then(ClientCommandManager.literal("InfoTextDisplay")
                                         .then(ClientCommandManager.argument("value", BoolArgumentType.bool())
                                                 .executes(context -> setBooleanSetting(context.getSource(), "enableInfoTextDisplay", BoolArgumentType.getBool(context, "value")))))

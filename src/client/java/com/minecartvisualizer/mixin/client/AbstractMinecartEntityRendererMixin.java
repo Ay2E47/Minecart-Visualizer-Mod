@@ -78,7 +78,7 @@ public abstract class AbstractMinecartEntityRendererMixin extends EntityRenderer
                         number = entry.getKey();
                     }
                 }
-            infoTexts.add(Text.literal("Tracker - " + number).setStyle(Style.EMPTY.withColor(TextColor.fromRgb(0x2E7CBE))));
+            infoTexts.add(Text.literal("Tracker - " + number).setStyle(Style.EMPTY.withColor(TextColor.fromRgb(0x387aff))));
             }
 
             if (MinecartVisualizerConfig.enableInfoTextDisplay){

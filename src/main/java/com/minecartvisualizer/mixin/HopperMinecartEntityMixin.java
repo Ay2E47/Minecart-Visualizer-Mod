@@ -47,7 +47,7 @@ public abstract class HopperMinecartEntityMixin extends StorageMinecartEntity {
             }
 
             HopperMinecartDataPayload payload = new HopperMinecartDataPayload(uuid,enable,boundingBox,items);
-            serverWorld.getPlayers(player -> player.squaredDistanceTo(this) < 32 * 32)
+            serverWorld.getPlayers(player -> player.squaredDistanceTo(this) <64 * 64)
                     .forEach(player -> ServerPlayNetworking.send(player, payload));
         }
     }
