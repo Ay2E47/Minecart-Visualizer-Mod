@@ -7,7 +7,7 @@ A Minecraft mod that provides some minecart debugging tools.
 
 /minecartvisualizer setting InfoTextDisplay : Toggles the display of real-time information for minecarts, including their position, velocity, or yaw.
 
-/minecartvisualizer setting LockedDisplay: Renders a box for activated hopper minecarts, making it easy to see which hoppers are enabled.
+/minecartvisualizer setting LockedDisplay: Renders a box for activated hopper minecarts, making it easy to see which are enabled.
 
 /minecartvisualizer setting InventoryDisplay: Toggles the display of a minecart's inventory contents directly in the world.
 
