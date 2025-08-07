@@ -4,6 +4,9 @@ import com.minecartvisualizer.config.MinecartVisualizerConfig;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.text.Style;
+import net.minecraft.text.Text;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.*;
@@ -16,6 +19,7 @@ public class MinecartClientHandler {
 
     private static final Map<UUID, MinecartDataPayload> MINECART_DATA = new ConcurrentHashMap<>();
     private static final Map<UUID, HopperMinecartDataPayload> HOPPER_MINECART_DATA = new ConcurrentHashMap<>();
+    private static final Map<UUID, TNTMinecartDataPayload> TNT_MINECART_DATA = new ConcurrentHashMap<>();
     private static final Map<UUID, Vec3d> serverMinecarts = new ConcurrentHashMap<>();
     private static final List<List<UUID>> minecartGroups = new CopyOnWriteArrayList<>();
     public static List<UUID> leaderMinecarts = new CopyOnWriteArrayList<>();
@@ -42,7 +46,7 @@ public class MinecartClientHandler {
             UUID uuid = entry.getKey();
             Vec3d pos = entry.getValue();
 
-            if (!MinecartTrackerTools.isEntityLoaded(uuid)){
+            if (!MinecartVisualizerUtils.isEntityLoaded(uuid)){
                 iterator.remove();
                 continue;
             }
@@ -74,6 +78,7 @@ public class MinecartClientHandler {
 
         PayloadTypeRegistry.playS2C().register(MinecartDataPayload.ID, MinecartDataPayload.CODEC);
         PayloadTypeRegistry.playS2C().register(HopperMinecartDataPayload.ID, HopperMinecartDataPayload.CODEC);
+        PayloadTypeRegistry.playS2C().register(TNTMinecartDataPayload.ID, TNTMinecartDataPayload.CODEC);
 
         ClientPlayNetworking.registerGlobalReceiver(MinecartDataPayload.ID, (payload, context) -> MinecraftClient.getInstance().execute(() -> {
             MINECART_DATA.put(payload.uuid(), payload);
@@ -87,13 +92,28 @@ public class MinecartClientHandler {
             }
 
             if (travelTimers != null && travelTimers.containsKey(payload.uuid())){
-                travelTimers.get(payload.uuid()).tickCount++;
+                if (travelTimers.get(payload.uuid()).hasMoved){
+                    travelTimers.get(payload.uuid()).tickCount++;
+                }
             }
         }));
 
         ClientPlayNetworking.registerGlobalReceiver(HopperMinecartDataPayload.ID,
                 (payload, context) -> MinecraftClient.getInstance().execute(() -> HOPPER_MINECART_DATA.put(payload.uuid(), payload)));
+
+        ClientPlayNetworking.registerGlobalReceiver(TNTMinecartDataPayload.ID,
+                (payload, context) -> MinecraftClient.getInstance().execute(() -> {TNT_MINECART_DATA.put(payload.uuid(), payload);
+                if (payload.isExploded() && MinecartVisualizerConfig.trackTNTMinecart){
+                    ClientPlayerEntity player = MinecraftClient.getInstance().player;
+                    Text headText = Text.literal("[Exploded]").setStyle(Style.EMPTY.withColor(0x8FBF3A));
+                    Text posText = Text.literal("At" + payload.explosionPos().toString()).setStyle(Style.EMPTY.withColor(0xDE2E6E));
+                    Text attackerText = Text.literal("[Attacker:" + payload.attacker() + "]").setStyle(Style.EMPTY.withColor(0x7EADFF));
+                    Text message = headText.copy().append(attackerText).append(posText);
+                    if (player != null){player.sendMessage(message, false);}
+                }
+                }));
     }
+
 
     public static MinecartDataPayload getMinecartData(UUID uuid) {
         return MINECART_DATA.get(uuid);
@@ -101,5 +121,9 @@ public class MinecartClientHandler {
 
     public static HopperMinecartDataPayload getHopperMinecartData(UUID uuid) {
         return HOPPER_MINECART_DATA.get(uuid);
+    }
+
+    public static TNTMinecartDataPayload getTNTMinecartData(UUID uuid) {
+        return TNT_MINECART_DATA.get(uuid);
     }
 }

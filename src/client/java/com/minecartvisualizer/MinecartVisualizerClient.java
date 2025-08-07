@@ -67,7 +67,7 @@ public class MinecartVisualizerClient implements ClientModInitializer {
 			}
 
 			if(!MinecartVisualizerConfig.enableMinecartVisualization && displayInfoKeyBinding.isPressed()){
-				if (MinecartTrackerTools.getLookedAtEntity() != null){uuid = MinecartTrackerTools.getLookedAtEntity().getUuid();}
+				if (MinecartVisualizerUtils.getLookedAtEntity() != null){uuid = MinecartVisualizerUtils.getLookedAtEntity().getUuid();}
 			}else {uuid = null;}
 		});
 
@@ -88,7 +88,7 @@ public class MinecartVisualizerClient implements ClientModInitializer {
 
 					Text numberText = Text.literal("[Tracker-" + number + "]").setStyle(Style.EMPTY.withColor(TextColor.fromRgb(0x3490dE)));
 
-					long gameTime = MinecartTrackerTools.getGameTime();
+					long gameTime = MinecartVisualizerUtils.getGameTime();
 					String changeInCount = " %d->%d ";
 
 					long runTime;
@@ -104,18 +104,18 @@ public class MinecartVisualizerClient implements ClientModInitializer {
 						posText = Text.literal(formatedPos.toString()).setStyle(Style.EMPTY.withColor(TextColor.fromRgb(0x7EADFF)));
 					} else {posText = Text.literal("");}
 
-					if (!MinecartTrackerTools.isEntityLoaded(entityUuid)) {
+					if (!MinecartVisualizerUtils.isEntityLoaded(entityUuid)) {
 
 						if (MinecartVisualizerConfig.trackMinecartUnload){
-							Text unLoadedText = Text.literal("Tracker-"+ entry.getKey() +" be unloaded");
+							Text unLoadedText = Text.literal("Tracker -"+ entry.getKey() +" be unloaded");
 							state.player.sendMessage(runTimeText.copy().append(unLoadedText).append(posText).setStyle(Style.EMPTY.withColor(TextColor.fromRgb(0xFF322B))),false);
 						}
 						iterator.remove();
 						continue;
 					}
 
-					List <ItemStack> inventory = MinecartTrackerTools.getHopperMinecartInventory(entityUuid);
-					Vec3d pos = MinecartTrackerTools.getMinecartPosition(entityUuid);
+					List <ItemStack> inventory = MinecartVisualizerUtils.getHopperMinecartInventory(entityUuid);
+					Vec3d pos = MinecartVisualizerUtils.getMinecartPosition(entityUuid);
 					state.updateState(inventory, pos);
 
 					if (state.inventory != null && state.lastInventory != null && state.pos != null){
@@ -202,13 +202,18 @@ public class MinecartVisualizerClient implements ClientModInitializer {
 					UUID uuid = entry.getKey();
 					MinecartTimerState state = entry.getValue();
 
-					if (!MinecartTrackerTools.isEntityLoaded(uuid)) {
+					if (!MinecartVisualizerUtils.isEntityLoaded(uuid)) {
 						iterator.remove();
 						continue;
 					}
-					Vec3d entityPos = MinecartTrackerTools.getMinecartPosition(uuid);
+					Vec3d entityPos = MinecartVisualizerUtils.getMinecartPosition(uuid);
+
+					if (state.startingPoint == null){state.startingPoint = entityPos;}
+
+					if (!state.hasMoved && state.startingPoint != null && !state.startingPoint.equals(entityPos)){state.hasMoved = true;}
 
 					if (entityPos == null){continue;}
+
 					BlockPos minecartBlockPos = new BlockPos((int) entityPos.x, (int) entityPos.y, (int) entityPos.z);
 
 					BlockPos destinationBlockPos = new BlockPos((int) state.destination.x, (int) state.destination.y, (int) state.destination.z);
@@ -224,12 +229,14 @@ public class MinecartVisualizerClient implements ClientModInitializer {
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
 			if (MinecartVisualizerConfig.trackAllMinecart && client.world != null){
 				for (Entity entity : client.world.getEntities()){
-					if (entity instanceof HopperMinecartEntity && !MinecartTrackerTools.toUUIDList(hopperMinecartTrackers).contains(entity.getUuid())){
-						MinecartVisualizerCommands.setNewTracker(MinecartTrackerTools.getNextAvailableNumber(), MinecartVisualizerCommands.playerEntity, entity.getUuid());
+					if (entity instanceof HopperMinecartEntity && !MinecartVisualizerUtils.toUUIDList(hopperMinecartTrackers).contains(entity.getUuid())){
+						MinecartVisualizerCommands.setNewTracker(MinecartVisualizerUtils.getNextAvailableNumber(), MinecartVisualizerCommands.playerEntity, entity.getUuid());
 					}
 				}
 			}
 		});
+
+
 	}
 
 	

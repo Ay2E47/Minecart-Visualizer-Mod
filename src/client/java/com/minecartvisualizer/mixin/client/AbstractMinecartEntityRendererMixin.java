@@ -2,13 +2,14 @@ package com.minecartvisualizer.mixin.client;
 
 import com.minecartvisualizer.*;
 import com.minecartvisualizer.config.MinecartVisualizerConfig;
-import net.minecraft.client.render.*;
+import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.entity.AbstractMinecartEntityRenderer;
 import net.minecraft.client.render.entity.EntityRenderer;
 import net.minecraft.client.render.entity.EntityRendererFactory;
 import net.minecraft.client.render.entity.state.MinecartEntityRenderState;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.vehicle.AbstractMinecartEntity;
+import net.minecraft.entity.vehicle.TntMinecartEntity;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
@@ -41,51 +42,63 @@ public abstract class AbstractMinecartEntityRendererMixin extends EntityRenderer
             at = @At("TAIL")
     )
     private void getEntity(AbstractMinecartEntity entity,
-                               MinecartEntityRenderState state,
-                               float tickDelta,
-                               CallbackInfo ci) {
+                           MinecartEntityRenderState state,
+                           float tickDelta,
+                           CallbackInfo ci) {
         this.entity = entity;
     }
 
 
     @Inject(
             method = "render(Lnet/minecraft/client/render/entity/state/MinecartEntityRenderState;Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;I)V",
-            at =  @At("TAIL")
+            at = @At("TAIL")
     )
     public void renderInfo(MinecartEntityRenderState state,
-                                   MatrixStack matrices,
-                                   VertexConsumerProvider vertexConsumer,
-                                   int light,
-                                   CallbackInfo ci){
+                           MatrixStack matrices,
+                           VertexConsumerProvider vertexConsumer,
+                           int light,
+                           CallbackInfo ci) {
 
 
-            MinecartDataPayload displayInfo = MinecartClientHandler.getMinecartData(entity.getUuid());
+        MinecartDataPayload displayInfo = MinecartClientHandler.getMinecartData(entity.getUuid());
+        TNTMinecartDataPayload tntMinecartDisplayInfo = null;
 
-            if (!InfoRenderer.shouldRender(entity)){
-                if (MinecartVisualizerClient.uuid != null && entity.getUuid().equals(MinecartVisualizerClient.uuid)) {
-                    displayInfo = MinecartClientHandler.getMinecartData(MinecartVisualizerClient.uuid);
-                }else {return;}
+        if (MinecartVisualizerConfig.trackTNTMinecart && entity instanceof TntMinecartEntity) {
+            tntMinecartDisplayInfo = MinecartClientHandler.getTNTMinecartData(entity.getUuid());
+        }
+        if (!InfoRenderer.shouldRender(entity)) {
+            if (MinecartVisualizerClient.uuid != null && entity.getUuid().equals(MinecartVisualizerClient.uuid)) {
+                displayInfo = MinecartClientHandler.getMinecartData(MinecartVisualizerClient.uuid);
+            } else {
+                return;
             }
+        }
 
-            if (displayInfo == null){return;}
+        if (displayInfo == null) {
+            return;
+        }
 
-            List<MutableText> infoTexts = new ArrayList<>();
+        List<MutableText> infoTexts = new ArrayList<>();
 
-            if (MinecartVisualizerConfig.enableTrackerNumberDisplay && !hopperMinecartTrackers.isEmpty()){
-                int number = 0;
-                for (Map.Entry<Integer, HopperMinecartState> entry : hopperMinecartTrackers.entrySet()) {
-                    if (entry.getValue().uuid == entity.getUuid()){
-                        number = entry.getKey();
-                    }
+        if (MinecartVisualizerConfig.enableTrackerNumberDisplay && !hopperMinecartTrackers.isEmpty()) {
+            int number = 0;
+            for (Map.Entry<Integer, HopperMinecartState> entry : hopperMinecartTrackers.entrySet()) {
+                if (entry.getValue().uuid == entity.getUuid()) {
+                    number = entry.getKey();
                 }
+            }
             infoTexts.add(Text.literal("Tracker - " + number).setStyle(Style.EMPTY.withColor(TextColor.fromRgb(0x387aff))));
-            }
+        }
 
-            if (MinecartVisualizerConfig.enableInfoTextDisplay){
-                infoTexts.addAll(InfoRenderer.getInfoTexts(displayInfo));
-            }
+        if (MinecartVisualizerConfig.enableInfoTextDisplay) {
+            infoTexts.addAll(InfoRenderer.getInfoTexts(displayInfo));
+        }
+
+        if (tntMinecartDisplayInfo != null) {
+            infoTexts.addAll(InfoRenderer.getTNTMinecartInfoTexts(tntMinecartDisplayInfo));
+        }
 
 
-            InfoRenderer.renderTexts(infoTexts, entity, matrices, vertexConsumer);
+        InfoRenderer.renderTexts(infoTexts, entity, matrices, vertexConsumer);
     }
 }

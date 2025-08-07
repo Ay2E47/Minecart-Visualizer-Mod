@@ -213,14 +213,24 @@ public class InfoRenderer {
     }
 
     public static List<MutableText> getInfoTexts(MinecartDataPayload displayInfo){
-        boolean[] enableFunctions = {
+        boolean[] enableSettings = {
                 MinecartVisualizerConfig.enablePosTextDisplay,
                 MinecartVisualizerConfig.enableVelocityTextDisplay,
                 MinecartVisualizerConfig.enableYawTextDisplay
         };
 
-        return displayInfo.getInfoTexts(MinecartVisualizerConfig.accuracy, enableFunctions);
+        return displayInfo.getInfoTexts(MinecartVisualizerConfig.accuracy, enableSettings);
     }
+
+    public static List<MutableText> getTNTMinecartInfoTexts(TNTMinecartDataPayload displayInfo){
+        boolean[] enableSettings = {
+                MinecartVisualizerConfig.enableTNTWobbleDisplay,
+                MinecartVisualizerConfig.enableTNTFuseTicksDisplay,
+        };
+
+        return displayInfo.getInfoTexts(enableSettings);
+    }
+
 }
 
 

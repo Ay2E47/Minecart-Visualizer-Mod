@@ -15,10 +15,10 @@ import java.util.*;
 import static com.minecartvisualizer.MinecartVisualizerClient.*;
 import static com.minecartvisualizer.command.MinecartVisualizerCommands.counter;
 
-public class MinecartTrackerTools {
+public class MinecartVisualizerUtils {
 
     public static void setNewTimer(UUID uuid, Vec3d destination, ClientPlayerEntity player) {
-        travelTimers.put(uuid,new MinecartTimerState(destination,player));
+        travelTimers.put(uuid,new MinecartTimerState(destination, player));
     }
 
     public static void setNewHopperMinecartTracker(UUID uuid, ClientPlayerEntity player, int number){

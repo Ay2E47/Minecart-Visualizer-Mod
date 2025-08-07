@@ -10,7 +10,10 @@ public final class MinecartVisualizerConfig {
     public static boolean enableHopperMinecartEnableDisplay = true;
     public static boolean enableHopperMinecartInventoryDisplay =true;
     public static boolean enableItemStackCountDisplay = true;
+    public static boolean enableTNTFuseTicksDisplay = true;
+    public static boolean enableTNTWobbleDisplay = true;
     public static boolean trackAllMinecart = false;
+    public static boolean trackTNTMinecart = true;
     public static boolean mergeStackingMinecartInfo = false;
     public static boolean alwaysFacingThePlayer = true;
     public static boolean trackerOutputRuntime = false;
@@ -18,8 +21,8 @@ public final class MinecartVisualizerConfig {
     public static boolean glowingTrackingMinecart = true;
     public static boolean trackSlotChanges = true;
     public static boolean trackItemAdditions = true;
-    public static boolean  trackItemDecreases = true;
-    public static boolean  trackMinecartUnload = true;
+    public static boolean trackItemDecreases = true;
+    public static boolean trackMinecartUnload = true;
     public static int infoRenderDistance = 32;
     public static int accuracy = 3;
 
